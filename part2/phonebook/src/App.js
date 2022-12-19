@@ -62,10 +62,6 @@ const App = () => {
 
   //-------------------------------------------------
 
-  const handleContactChange = (event) => {
-    setNewName(event.target.value)
-  }
-
   const addContact = (event) => {
     event.preventDefault();
 
@@ -85,6 +81,10 @@ const App = () => {
   }
 
   //-------------------------------------------------
+
+  const handleContactChange = (event) => {
+    setNewName(event.target.value)
+  }
 
   const handleNumberChange = (event) => {
     setNewNumber(event.target.value)
