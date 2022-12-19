@@ -6,8 +6,8 @@ const Button = (props) => {
       <button onClick={props.handleClick}>{props.text}</button>
     </>
   )
-}
-
+} 
+ 
 const App = () => {
   const anecdotes = [
     'If it hurts, do it more often.',
