@@ -1,0 +1,21 @@
+#Components - 
+1. App
+    States 
+        countriesData
+        searchCountries
+        countries
+    Effects
+        getting countries data
+    Handlers
+        searchCountriesHandler
+
+
+2. Countries
+    States
+
+    Effects
+
+    Handlers
+        languagesHandler
+        currenciesHandler
+       
