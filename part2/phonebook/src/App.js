@@ -1,5 +1,26 @@
 import {useState, useEffect} from 'react'
 import personsService from './services/persons'
+import './index.css'
+
+const Notification = ({ message, messageType }) => {
+  if (messageType === null) {
+    return null
+  }
+
+  if(messageType === "success"){
+    return (
+      <div className='success'>
+        {message}
+      </div>
+    )  
+  } else {
+    return (
+      <div className='error'>
+        {message}
+      </div>
+    )
+  }
+}
 
 const ContactForm = (props) => {
   return (
@@ -57,6 +78,8 @@ const App = () => {
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
   const [newFilter, setNewFilter] = useState('')
+  const [message, setMessage] = useState(null)
+  const [messageType, setMessageType] = useState(null)
 
   useEffect(() => {
       personsService
@@ -85,6 +108,20 @@ const App = () => {
         .put(contact.id, changedContact)
         .then(response => {
           setPersons(persons.map(n => n.id !== contact.id ? n : response.data))
+
+          setMessage("Contact updated")
+          setMessageType("success")
+          setTimeout(() => {
+            setMessage(null)
+            setMessageType(null)
+          }, 5000)
+        }).catch((error) => {
+          setMessage("Contact cannot be updated")
+          setMessageType("error")
+          setTimeout(() => {
+            setMessage(null)
+            setMessageType(null)
+          }, 5000)
         })
 
         return
@@ -102,6 +139,20 @@ const App = () => {
       setPersons(persons.concat(response.data))
       setNewName("")
       setNewNumber("")
+
+      setMessage("Contact saved")
+      setMessageType("success")
+      setTimeout(() => {
+        setMessage(null)
+        setMessageType(null)
+      }, 5000)
+    }).catch(error => {
+      setMessage("Contact cannot be saved")
+      setMessageType("error")
+      setTimeout(() => {
+        setMessage(null)
+        setMessageType(null)
+      }, 5000)
     })
   }
 
@@ -116,7 +167,25 @@ const App = () => {
         return true
       }))
 
-      console.log(response)
+
+      setMessage("Contact removed")
+      setMessageType("success")
+      setTimeout(() => {
+        setMessage(null)
+        setMessageType(null)
+      }, 5000)
+    }).catch(error => {
+
+      let index = persons.findIndex(person => person.id === id)
+
+      setMessage(`Information of ${persons[index].name} has already been removed from the server.`)
+      setMessageType("error")
+      setTimeout(() => {
+        setMessage(null)
+        setMessageType(null)
+      }, 5000)
+
+      persons.splice(index, 1)
     })
   }
 
@@ -134,6 +203,7 @@ const App = () => {
 
   return (
     <div>
+      <Notification message={message} messageType={messageType}/>
       <h2>Phonebook</h2>
       <Filter newFilter={newFilter} handleFilterChange={handleFilterChange} newNumber={newNumber}/>
 
@@ -143,6 +213,7 @@ const App = () => {
         onChangeNameHandler={handleContactChange} 
         onChangeNumberHandler={handleNumberChange}
         newName={newName}
+        newNumber={newNumber}
       />
 
       <h2>Numbers</h2>
