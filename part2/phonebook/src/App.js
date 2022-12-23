@@ -1,5 +1,5 @@
 import {useState, useEffect} from 'react'
-import axios from 'axios'
+import personsService from './services/persons'
 
 const ContactForm = (props) => {
   return (
@@ -22,7 +22,10 @@ const ContactForm = (props) => {
 const Person = (props) => {
   return (
     <>
-      <p>{props.person.name} {props.person.number}</p>
+      <p>{props.person.name} {props.person.number}<button onClick={() => {
+        if(window.confirm(`Delete ${props.person.name}`) === true){
+          props.removeHandler(props.person.id)
+        }}}>Remove</button></p>
     </>
   )
 }
@@ -33,7 +36,7 @@ const Persons = (props) => {
       {props.persons.map((person) => {
         if(person.name.toLowerCase().includes(props.newFilter.toLowerCase())){
           return (
-            <Person key={person.name} person={person}/>
+            <Person key={person.name} person={person} removeHandler={props.removeHandler}/>
           )
         } 
       })}
@@ -51,27 +54,41 @@ const Filter = (props) => {
 
 const App = () => {
   const [persons, setPersons] = useState([]) 
+  const [newName, setNewName] = useState('')
+  const [newNumber, setNewNumber] = useState('')
+  const [newFilter, setNewFilter] = useState('')
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
+      personsService
+      .getAll()
       .then(response => {
         setPersons(response.data)
       })
   }, [])
 
-  const [newName, setNewName] = useState('')
-  const [newNumber, setNewNumber] = useState('')
-  const [newFilter, setNewFilter] = useState('')
-
-  //-------------------------------------------------
-
   const addContact = (event) => {
     event.preventDefault();
 
-    if(persons.findIndex((person) => (person.name === newName)) !== -1){
-      alert(`${newName} is already added to phonebook`)
-      return
+    const contactIndex = persons.findIndex((person) => (person.name === newName))
+
+    if(contactIndex !== -1){
+      if(window.confirm(`${newName} is already added to phonebook, replace the old number with a new one`) === true){
+
+        const contact = persons[contactIndex]
+
+        const changedContact = {
+          ...contact,
+          number: newNumber
+        }
+
+        personsService
+        .put(contact.id, changedContact)
+        .then(response => {
+          setPersons(persons.map(n => n.id !== contact.id ? n : response.data))
+        })
+
+        return
+      }
     }
 
     const newContact = {
@@ -79,12 +96,29 @@ const App = () => {
       number: newNumber
     }
 
-    setPersons(persons.concat(newContact))
-    setNewName("")
-    setNewNumber("")
+    personsService
+    .create(newContact)
+    .then(response => {
+      setPersons(persons.concat(response.data))
+      setNewName("")
+      setNewNumber("")
+    })
   }
 
-  //-------------------------------------------------
+  const removeHandler = (id) => {
+    personsService
+    .remove(id)
+    .then(response => {
+      setPersons(persons.filter((person) => {
+        if(person.id === id){
+          return false
+        }
+        return true
+      }))
+
+      console.log(response)
+    })
+  }
 
   const handleContactChange = (event) => {
     setNewName(event.target.value)
@@ -101,17 +135,18 @@ const App = () => {
   return (
     <div>
       <h2>Phonebook</h2>
-      <Filter newFilter={newFilter} handleFilterChange={handleFilterChange}/>
+      <Filter newFilter={newFilter} handleFilterChange={handleFilterChange} newNumber={newNumber}/>
 
       <h2>Add a new</h2>
       <ContactForm 
         onSubmitHandler={addContact} 
         onChangeNameHandler={handleContactChange} 
         onChangeNumberHandler={handleNumberChange}
+        newName={newName}
       />
 
       <h2>Numbers</h2>
-      <Persons persons={persons} newFilter={newFilter}/>
+      <Persons persons={persons} newFilter={newFilter} removeHandler={removeHandler}/>
     </div>
   )
 }
