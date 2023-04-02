@@ -59,6 +59,8 @@ const Persons = (props) => {
           return (
             <Person key={person.name} person={person} removeHandler={props.removeHandler}/>
           )
+        } else {
+          return null;
         } 
       })}
     </>
@@ -82,11 +84,15 @@ const App = () => {
   const [messageType, setMessageType] = useState(null)
 
   useEffect(() => {
-      personsService
-      .getAll()
-      .then(response => {
-        setPersons(response.data)
-      })
+
+      setInterval(()=>{
+        personsService
+        .getAll()
+        .then(response => {
+          setPersons(response.data)
+        })
+      }, 1000)
+
   }, [])
 
   const addContact = (event) => {
@@ -147,6 +153,7 @@ const App = () => {
         setMessageType(null)
       }, 5000)
     }).catch(error => {
+      console.log(error)
       setMessage("Contact cannot be saved")
       setMessageType("error")
       setTimeout(() => {
