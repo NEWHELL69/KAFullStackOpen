@@ -154,7 +154,8 @@ const App = () => {
       }, 5000)
     }).catch(error => {
       console.log(error)
-      setMessage("Contact cannot be saved")
+      
+      setMessage(error.response.data.error)
       setMessageType("error")
       setTimeout(() => {
         setMessage(null)
